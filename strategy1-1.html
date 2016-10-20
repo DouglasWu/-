@@ -1,0 +1,531 @@
+<!DOCTYPE html> 
+<html>
+<head>
+	<title>摩台指投資策略1.1</title> 
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="css/bootstrap.min.css" media="all" rel="stylesheet">
+	<link href="css/back-to-top.css" media="all" rel="stylesheet">
+	<script type="text/javascript" language="javascript" src="js/jquery-2.1.1.js"></script>
+	<script type="text/javascript" language="javascript" src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" language="javascript" src="js/data_array.js"></script>
+	<script type="text/javascript" language="javascript" src="js/data_prepare.js"></script>
+	<script type="text/javascript" language="javascript" src="js/back-to-top.js"></script>
+	<script type="text/javascript" language="javascript" src="js/d3.min.js"></script>
+	<script type="text/javascript" language="javascript" src="js/month-bar-chart.js"></script>
+	<style>
+		body {
+			padding-top: 20px;
+			font-family: "微軟正黑體";
+		}
+		.form-control {
+			margin-right: 15px;
+			font-size: 16px;
+		}
+		.form-inline {
+			margin: 15px auto;
+			font-size: 16px;
+		}
+		.panel-heading {
+			font-size: 15px;
+			font-weight: bold;
+		}
+		.panel-body {
+			font-size: 15px;
+		}
+		thead{
+			background-color:white;
+			/*border-bottom: 2px solid #D6D6D6;*/
+		}
+		
+		/* d3 bar chart setting */
+		
+		.axis path,
+		.axis line {
+		  fill: none;
+		  stroke: #000;
+		  shape-rendering: crispEdges;
+		}
+
+		.x.axis path {
+		  display: none;
+		}
+
+		.line {
+		  fill: none;
+		  stroke: steelblue;
+		  stroke-width: 1.5px;
+		}
+
+	</style>
+</head>
+<body>
+
+	<div class="container">
+		<p><b>策略：</b><br>
+		條件1：在盤中，突破前5日（S1）的最高點，如果本來是空單，平倉同時反手買進（買進價格為：前5日的最高點 + 摩台指最小跳動價格0.1）<br>
+條件2：在盤中，跌破前5日（S2）的最低點，如果本來是多單，平倉同時反手賣出，反手做空（賣出價格為：前5日的最低點 - 摩台指最小跳動價格0.1）<br>
+條件3：每天最多交易一次（比方說，現在手上是多單，盤中滿足反手條件做空，在持空單時，今天又出現平倉做多的情況，不做任何操作，只有明天滿足條件時再做）</p>
+		<p>
+		<b>補充：</b><br>
+		<ul>
+			<li>當開盤價滿足反手的條件，就以開盤價作為進場的點位</li>
+			<li>每筆交易手續費，扣0.2點，換算淨值，0.1點=10美元</li>
+			<li>請把最小跳動價格（e.g.摩台指：0.1）、手續費（e.g.摩台指：0.2）、淨值換算（e.g.摩台指：100）都寫成可以修改的參數</li>
+			<li>請把S1, S2設為可以修改的參數，以後如果需要可以輸入不同的值獲得回測報告</li>
+		</ul>
+		</p>
+		<p><b>資料：</b> 摩台指 2005~2015年</p>
+		
+		<div class="form-inline">
+		  
+			<label for="unitCost">最小跳動價格</label>
+			<input type="text" size="4" class="form-control" id="minUnit"/>
+			
+			
+			<label for="unitCost">交易成本</label>
+			<input type="text" size="4" class="form-control" id="unitCost"/>
+			
+			<label for="networth-rate">淨值換算</label>
+			<input type="text" size="4" class="form-control" id="networth-rate"/>
+
+			<label for="S1">S1</label>
+			<input type="text" size="4" class="form-control" id="S1" />
+			
+			<label for="S2">S2</label>
+			<input type="text" size="4" class="form-control" id="S2"/>
+		  	
+			<button class="btn btn-default" onclick="run()">計算</button>
+		 
+		</div>
+		<!--pre></pre-->
+		<div class="row">
+			<div class="col-md-6">
+				<div class="panel panel-default">
+					<div class="panel-heading text-center">計算結果</div>
+					<div class="panel-body">
+						<p>總獲利：<span id="total"></span></p>
+						<p>毛利：<span id="total-profit"></span></p>
+						<p>毛損：<span id="total-loss"></span></p>
+						<p>交易次數：<span id="deal-times"></span></p>
+						<p>年均交易次數：<span id="year-deal-times"></span></p>
+						<p>獲利次數：<span id="profit-times"></span></p>
+						<p>虧損次數：<span id="loss-times"></span></p>
+						<p>勝率：<span id="win-rate"></span></p>
+						<p>最大單次盈利：<span id="max-profit-value"></span></p>
+						<p>最大單次虧損：<span id="max-loss-value"></span></p>
+						<p>平均盈利：<span id="avg-profit"></span></p>
+						<p>平均虧損：<span id="avg-loss"></span></p>
+						<p>平均利潤：<span id="avg-balance"></span></p>
+						<p>平均盈利/平均虧損：<span id="avg-rate"></span></p>
+						<p>最大連續虧損次數：<span id="max-con-loss-times"></span></p>
+						<p>最大連續虧損金額：<span id="max-con-loss-value"></span></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div role="tabpanel">
+
+		  <!-- Nav tabs -->
+		  <ul class="nav nav-tabs" role="tablist">
+			<li role="presentation" class="active"><a href="#detail" aria-controls="detail" role="tab" data-toggle="tab">交易明細</a></li>
+			<li role="presentation"><a href="#daily-networth" aria-controls="daily-networth" role="tab" data-toggle="tab">每日淨值</a></li>
+		
+		<li role="presentation"><a href="#daily-networth-chart" aria-controls="daily-networth-chart" role="tab" data-toggle="tab">每日淨值圖</a></li>
+		
+		
+			<li role="presentation"><a href="#deal-networth" aria-controls="deal-networth" role="tab" data-toggle="tab">交易日淨值</a></li>
+			<li role="presentation"><a href="#monthly" aria-controls="monthly" role="tab" data-toggle="tab">月獲利</a></li>
+			<li role="presentation"><a href="#annual" aria-controls="annual" role="tab" data-toggle="tab">年獲利</a></li>
+			
+		  </ul>
+
+		  <!--交易明細 -->
+		  <div class="tab-content">
+			<div role="tabpanel" class="tab-pane fade in active row" id="detail">
+				<div class="col-md-12">
+					<div id="table-container">
+						<table class="table table-striped"  id="detail-table">
+							<thead>
+								<tr>
+									<th>編號</th><th>進場時間</th><th>出場時間</th>
+									<th>進場點</th><th>出場點</th>
+									<th>多或空</th><th>獲利</th>
+									<th>與MA60乖離率</th>
+								</tr>
+							</thead>
+							<tbody></tbody>
+						</table>
+						<div id="bottom_anchor"></div>
+					</div>
+				</div>
+			</div>
+			
+			 <!--每日淨值 -->
+			<div role="tabpanel" class="tab-pane fade in row" id="daily-networth">
+				<div class="col-md-5">
+					<div id="table-container">
+						<table class="table table-striped"  id="networth-table">
+							<thead><tr><th>日期</th><th>淨值</th><th>MDD1</th></tr></thead>
+							<tbody></tbody>
+						</table>
+						<div id="bottom_anchor"></div>
+					</div>
+				</div>
+			</div>
+			
+			 <!--每日淨值圖 -->
+			<div role="tabpanel" class="tab-pane fade in row" id="daily-networth-chart">
+				<div class="col-md-12">
+					<div class="line-chart"></div>
+					<script>//drawLineChart();</script>
+				</div>
+			</div>
+			
+			 <!--交易淨值 -->
+			<div role="tabpanel" class="tab-pane fade in row" id="deal-networth">
+				<div class="col-md-5">
+					<div id="table-container">
+						<table class="table table-striped"  id="deal-networth-table">
+							<thead><tr><th>交易編號</th><th>淨值</th></tr></thead>
+							<tbody></tbody>
+						</table>
+						<div id="bottom_anchor"></div>
+					</div>
+				</div>
+			</div>
+			
+			 <!--月獲利 -->
+			<div role="tabpanel" class="tab-pane fade in row" id="monthly">
+				<div class="col-md-5">
+					<div id="table-container">
+						<table class="table table-striped"  id="monthly-table">
+							<thead><tr><th>月份</th><th>獲利</th></tr></thead>
+							<tbody></tbody>
+						</table>
+						<div id="bottom_anchor"></div>
+					</div>
+				</div>
+			</div>
+			
+			 <!--年獲利 -->
+			<div role="tabpanel" class="tab-pane fade in row" id="annual">
+				<div class="col-md-5">
+					<div id="table-container">
+						<table class="table table-striped"  id="annual-table">
+							<thead><tr><th>年份</th><th>獲利</th></tr></thead>
+							<tbody></tbody>
+						</table>
+						<div id="bottom_anchor"></div>
+					</div>
+				</div>
+			</div>
+			
+		  </div>
+		</div><!--tabpanel-->
+	</div>
+	
+	<a href="#0" class="cd-top">Top</a>
+
+	
+	<script>
+		$(document).ready(function() {
+			/** 初始參數設定 */
+			$('#minUnit').val(0.1);
+			$('#unitCost').val(0.2);
+			$('#networth-rate').val(100);
+			$('#S1').val(5);
+			$('#S2').val(5);
+		/*	$('#startYear').change(function(){
+				var startYear = parseInt($('#startYear').val());
+				$('#endYear option').remove();
+				for(var i=startYear; i<=2015; i++) {
+					$('#endYear').append('<option>'+i+'</option>');
+				}
+				$('#endYear option').last().attr('selected', true);
+			});*/
+			
+			/** 凍結表格欄位  */
+			function moveScroll() {
+				var scroll = $(window).scrollTop();
+				var anchor_top = $("#detail-table").offset().top;
+				var anchor_bottom = $("#bottom_anchor").offset().top;
+				if (scroll>anchor_top && scroll<anchor_bottom) {
+					clone_table = $("#clone");
+					if(clone_table.length == 0){
+						clone_table = $("#detail-table").clone();
+						clone_table.attr('id', 'clone');
+						clone_table.css({position:'fixed',
+								 'pointer-events': 'none',
+								 top:0});
+						clone_table.width($("#detail-table").width());
+						$("#table-container").append(clone_table);
+						$("#clone").css({visibility:'hidden'});
+						$("#clone thead").css({visibility:'visible'});
+					}
+				} else {
+					$("#clone").remove();
+				}
+			}
+			$(window).scroll(moveScroll);
+		});
+	</script>
+	
+	
+	<script>
+	/*function run() {
+		var s1, s2, goodS1, goodS2;
+		var maxProf = -99999;
+		for(s2=3; s2<=25; s2++) {
+			for(s1=3; s1<=25; s1++) {
+				var prof = calc(s1, s2);
+				if(prof > maxProf) {
+					maxProf = prof;
+					goodS1 = s1;
+					goodS2 = s2;
+				}
+				var str = ''+prof.toFixed(1)+'\t';
+				$('pre').append(str);
+				if(s1==25){
+					$('pre').append('\n');
+				}
+			}
+		}
+		console.log("maxProf: "+maxProf.toFixed(1));
+		console.log("S1: "+goodS1);
+		console.log("S2: "+goodS2);
+	}*/
+	function run() {
+		$('tbody').html('');
+		$('.bar-chart').html('');
+		
+		
+		/** 取得輸入的參數 */
+		var S1 = parseInt($('#S1').val()),//5 突破前S1日最高點
+			S2 = parseInt($('#S2').val()),//5 跌破前S2日最低點
+			networthRate = parseFloat($('#networth-rate').val()), // 100 淨值換算
+			unitCost = parseFloat($('#unitCost').val()),// 0.2 交易手續費
+			minUnit = parseFloat($('#minUnit').val()); // 0.1 最小跳動價格
+		
+		/** 輸出資料 */
+		var totalProfit = 0,
+			totalLoss = 0,
+			dealCnt = 0,
+			yearDealTimes = 0,
+			profitTimes = 0,
+			losTimes = 0,
+			maxProfitValue = 0,
+			maxLossValue = 0,
+			avgProfit = 0,
+			avgLoss = 0,
+			avgBalance = 0,
+			maxConLosTimes = 0,
+			maxConLosValue = 0;
+			
+		var b_or_s = ''; // "BUY" or "SEL"
+		var enterPoint = -1; // -1 means no need to enter
+		var monthlyProfit = {};
+		var entered=false;
+
+		var inP, outP, profit;
+		var curYear, curMonth, curDay;
+		var inIdx, outIdx;
+		var MA60=0;
+		var maxS1;     // 前S1日的最高點
+		var	minS2;     // 前S2日的最低點
+		var inMaxS1, inMinS2;
+		var tmpLosTimes = 0, tmpLosValue = 0;
+		var networth = 0, maxNetworth = 0, MDD1 = 0;
+		var networth_arr = [];
+		var lastMonthNet = 0, lastYearNet = 0;
+		
+
+		for(var i=0; i<data_arr.length; i++) {
+			curYear = getYear(i);
+			curMonth = getMonth(i);
+			networth_arr[i] = 0;
+			
+			if(2005<=curYear && curYear<=2015) {
+				/** brute force to get maxS1 and minS2  */
+				maxS1 = 0;
+				minS2 = 99999;
+				for(var j = i-S1; j <= i-1; j++) {
+					maxS1 = Math.max(maxS1, data_arr[j]['max']);
+				}
+				for(var j = i-S2; j <= i-1; j++) {
+					minS2 = Math.min(minS2, data_arr[j]['min']);
+				}
+				
+
+				/** 進場判斷 */
+				var changed = false;
+				var onlyEnter = false;
+				if(data_arr[i]['max'] > maxS1 && b_or_s!="BUY") {
+					var tmp = data_arr[i]['start'] > maxS1? data_arr[i]['start'] : maxS1+minUnit;
+					if(!entered) {
+						entered = true;
+						onlyEnter = true;
+					} else {
+						clearMarket(i, tmp); // 平倉
+					}
+					enterMarket(i, tmp, "BUY");
+					changed = true;
+				}
+				else if(data_arr[i]['min'] < minS2 && b_or_s!="SEL") {
+					var tmp = data_arr[i]['start'] < minS2? data_arr[i]['start'] : minS2-minUnit;
+					if(!entered) {
+						entered = true;
+						onlyEnter = true;
+					} else {
+						clearMarket(i, tmp); // 平倉
+					}
+					enterMarket(i, tmp, "SEL");
+					changed = true;
+				}
+				
+				/** 淨值計算 */
+				if(!changed) { // 沒交易
+					if(entered) {
+						networth += b_or_s=="BUY" ? (data_arr[i]['end']-data_arr[i-1]['end']) : (data_arr[i-1]['end']-data_arr[i]['end']);
+					}
+				}
+				else { // 有交易
+					var enterProfit=0, dealProfit=0;
+					enterProfit = b_or_s=="BUY" ? (data_arr[i]['end']-inP):(inP-data_arr[i]['end']);
+					if(!onlyEnter)
+						dealProfit  = b_or_s=="BUY" ? (data_arr[i-1]['end']-outP-unitCost):(outP-data_arr[i-1]['end']-unitCost);
+					networth += enterProfit+dealProfit;
+				}
+				networth_arr[i] = networth;
+				var DD1 = (maxNetworth-networth)*networthRate;
+				MDD1 = Math.max(MDD1, DD1);
+				var str = '<td>'+data_arr[i]['date']+'</td>'+
+						  '<td>'+(networth*networthRate).toFixed(0)+'</td>'+
+						  '<td>'+MDD1.toFixed(0)+'</td>';
+				$('#networth-table tbody').append('<tr>' + str + '</tr>');
+				maxNetworth = Math.max(maxNetworth, networth);
+				if(changed) {
+					str = '<td>'+dealCnt+'</td>'+
+					  '<td>'+(networth*networthRate).toFixed(0)+'</td>';
+					$('#deal-networth-table tbody').append('<tr>' + str + '</tr>');
+				}
+				
+				/** 月獲利 */
+				if(curMonth != getMonth(i-1)) { // i-1 為月底
+					lastMonthNet = networth_arr[i-1];
+				}
+				if(curMonth != getMonth(i+1)) { // i為月底
+					var str =  '<td>'+curYear+'/'+curMonth+'</td>'+
+							   '<td>'+((networth-lastMonthNet)*networthRate).toFixed(0)+'</td>';
+					$('#monthly-table tbody').append('<tr>' + str + '</tr>');
+				}
+				
+				/** 年獲利 */
+				if(curYear != getYear(i-1)) { // i-1 為年底
+					lastYearNet = networth_arr[i-1];
+				}
+				if(curYear != getYear(i+1)) { // i為年底
+					var str =  '<td>'+curYear+'</td>'+
+							   '<td>'+((networth-lastYearNet)*networthRate).toFixed(0)+'</td>';
+					$('#annual-table tbody').append('<tr>' + str + '</tr>');
+				}
+			}
+		}
+
+		function getMonth(idx) {
+			return  parseInt(data_arr[idx]['date'].split('/')[1]);
+		}
+		function getYear(idx) {
+			return  parseInt(data_arr[idx]['date'].split('/')[0]);
+		}
+		function enterMarket(idx, inValue, type) { // 進場
+			inIdx = idx;
+			inP = inValue;
+			inMaxS1 = maxS1;
+			inMinS2 = minS2;
+			b_or_s = type;
+		}
+		function clearMarket(idx, outValue) { // 平倉
+			outIdx = idx;
+			outP = outValue;
+			profit = b_or_s=="BUY" ? outP-inP-unitCost : inP-outP-unitCost;
+			dealCnt++;
+			//console.log("進場: "+inP+"  出場: "+outP+"  "+b_or_s+"  獲利: "+profit);
+			if(profit>=0) {
+				profitTimes++;
+				totalProfit+=profit;
+				tmpLosTimes = 0;
+				tmpLosValue = 0;
+				maxProfitValue = Math.max(profit, maxProfitValue);
+			}
+			else{
+				losTimes++;
+				totalLoss+= (-profit);
+				tmpLosTimes++;
+				tmpLosValue += (-profit);
+				maxLossValue = Math.max(-profit, maxLossValue);
+				maxConLosTimes = Math.max(tmpLosTimes, maxConLosTimes);
+				maxConLosValue = Math.max(tmpLosValue, maxConLosValue);
+			}
+			
+			
+			/** brute force to get MA60 */
+			var sum = 0
+			for(var j = inIdx-60; j <= inIdx-1; j++) {
+				sum += data_arr[j]['end'];
+			}
+			MA60 = sum/60;
+			
+			outputDetail();
+		}
+		
+		/** 輸出交易明細 */
+		function outputDetail() {
+			var bias = b_or_s=="BUY"? (inMaxS1-MA60)/MA60 : (inMinS2-MA60)/MA60; // 乖離率計算
+			
+			var str = '<td>'+dealCnt+'</td>'+
+					  '<td>'+data_arr[inIdx]['date']+'</td>'+
+					  '<td>'+data_arr[outIdx]['date']+'</td>'+
+					  '<td>'+inP.toFixed(1)+'</td>'+
+					  '<td>'+outP.toFixed(1)+'</td>'+
+					  '<td>'+b_or_s[0]+'</td>'+
+					  '<td>'+profit.toFixed(1)+'</td>' + 
+					  '<td>'+bias.toFixed(5)+'</td>';
+			$('#detail-table tbody').append('<tr>' + str + '</tr>');
+		}
+		
+		outputResult();
+		
+		/** 輸出計算結果 */
+		function outputResult() {
+			yearDealTimes = dealCnt/(2015-2005+1);
+			avgProfit = totalProfit/profitTimes;
+			avgLoss = totalLoss/losTimes;
+			avgBalance = (totalProfit-totalLoss)/dealCnt;
+			$('#total').html((totalProfit-totalLoss).toFixed(1));
+			$('#total-profit').html(totalProfit.toFixed(1));
+			$('#total-loss').html(totalLoss.toFixed(1));
+			$('#deal-times').html(dealCnt);
+			$('#year-deal-times').html(yearDealTimes.toFixed(1));
+			$('#profit-times').html(profitTimes);
+			$('#loss-times').html(losTimes);
+			$('#win-rate').html( (profitTimes/dealCnt).toFixed(3) );
+			$('#max-profit-value').html(maxProfitValue.toFixed(1));
+			$('#max-loss-value').html(maxLossValue.toFixed(1));
+			$('#avg-profit').html(avgProfit.toFixed(4));
+			$('#avg-loss').html(avgLoss.toFixed(4));
+			$('#avg-balance').html(avgBalance.toFixed(4));
+			$('#avg-rate').html((avgProfit/avgLoss).toFixed(5));
+			$('#max-con-loss-times').html(maxConLosTimes);
+			$('#max-con-loss-value').html( (maxConLosValue*networthRate).toFixed(0));
+		}
+		
+		return totalProfit-totalLoss;
+		
+	}
+		
+	</script>
+
+</body>
+</html>

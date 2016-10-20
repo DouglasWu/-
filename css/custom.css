@@ -1,0 +1,57 @@
+body {
+	padding-top: 20px;
+	font-family: "微軟正黑體";
+}
+.form-control {
+	margin-right: 15px;
+	font-size: 16px;
+}
+.form-inline {
+	margin: 15px auto;
+	font-size: 16px;
+}
+.panel-heading {
+	font-size: 15px;
+	font-weight: bold;
+}
+.panel-body {
+	font-size: 15px;
+}
+thead{
+	background-color:white;
+	/*border-bottom: 2px solid #D6D6D6;*/
+}
+
+pre {
+	font-size: 16px;
+}
+
+
+/* d3 bar chart setting */
+		
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+.deal-line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 2.5px;
+}
+
+.y.axis line, .y.axis path {
+  fill: none;
+  stroke: lightgrey;
+}

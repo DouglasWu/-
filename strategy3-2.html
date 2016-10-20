@@ -337,7 +337,7 @@
 		var tmpLosTimes = 0, tmpLosValue = 0;
 		var networth = 0, maxNetworth = 0, MDD1 = 0;
 		var networth_arr = [];
-		var lastMonthNet = 0, lastYearNet = 0;
+		var netStats = {lastMonthNet:0, lastYearNet:0};
 
 		var longKNum = 0;
 		var longKDate, longKMax, longKMin;
@@ -399,21 +399,8 @@
 				
 				
 				if(toOutput) {
-					outputNetworth(isEnter||isClear, i, networth, networthRate, MDD1, dealCnt);
-					
-					if(curMonth != getMonth(i-1)) { // i-1 為月底
-						lastMonthNet = networth_arr[i-1];
-					}
-					if(curMonth != getMonth(i+1)) { // i為月底
-						outputMonth(curYear, curMonth, networth, networthRate, lastMonthNet);
-					}
-					
-					if(curYear != getYear(i-1)) { // i-1 為年底
-						lastYearNet = networth_arr[i-1];
-					}
-					if(curYear != getYear(i+1)) { // i為年底
-						outputYear(curYear, networth, networthRate, lastYearNet);
-					}
+					outputStatistics(isEnter, isClear, i, networth, networthRate, networth_arr, MDD1,
+							dealCnt, curMonth, curYear, netStats );
 				}
 			}
 		}

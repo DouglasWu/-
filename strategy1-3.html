@@ -394,7 +394,7 @@
 		var tmpLosTimes = 0, tmpLosValue = 0;
 		var networth = 0, maxNetworth = 0, MDD1 = 0;
 		var networth_arr = [];
-		var lastMonthNet = 0, lastYearNet = 0;
+		var netStats = {lastMonthNet:0, lastYearNet:0};
 		
 
 		for(var i=0; i<data_arr.length; i++) {
@@ -512,10 +512,8 @@
 				MDD1 = Math.max(MDD1, DD1);
 				
 				if(toOutput) {
-					outputNetworth();
-				
-					outputMonth();
-					outputYear();
+					outputStatistics(isEnter, isClear, i, networth, networthRate, networth_arr, MDD1,
+							dealCnt, curMonth, curYear, netStats );
 				}
 			}
 		}
@@ -560,7 +558,6 @@
 				maxConLosValue = Math.max(tmpLosValue, maxConLosValue);
 			}
 			
-			
 			/** brute force to get MA60 (進場前60天)*/
 			var sum = 0
 			for(var j = inIdx-60; j <= inIdx-1; j++) {
@@ -571,7 +568,6 @@
 			if(toOutput)
 				outputDetail();
 		}
-		
 		
 		/** 輸出交易明細 */
 		function outputDetail() {
@@ -586,41 +582,6 @@
 					  '<td>'+profit.toFixed(1)+'</td>' + 
 					  '<td>'+bias.toFixed(5)+'</td>';
 			$('#detail-table tbody').append('<tr>' + str + '</tr>');
-		}
-		/**輸出淨值 */
-		function outputNetworth() {
-			var str = '<td>'+data_arr[i]['date']+'</td>'+
-					  '<td>'+(networth*networthRate).toFixed(0)+'</td>'+
-					  '<td>'+MDD1.toFixed(0)+'</td>';
-			$('#networth-table tbody').append('<tr>' + str + '</tr>');
-			maxNetworth = Math.max(maxNetworth, networth);
-			if(changed) {
-				str = '<td>'+dealCnt+'</td>'+
-				  '<td>'+(networth*networthRate).toFixed(0)+'</td>';
-				$('#deal-networth-table tbody').append('<tr>' + str + '</tr>');
-			}
-		}
-		/** 輸出月獲利 */
-		function outputMonth() {
-			if(curMonth != getMonth(i-1)) { // i-1 為月底
-				lastMonthNet = networth_arr[i-1];
-			}
-			if(curMonth != getMonth(i+1)) { // i為月底
-				var str =  '<td>'+curYear+'/'+curMonth+'</td>'+
-						   '<td>'+((networth-lastMonthNet)*networthRate).toFixed(0)+'</td>';
-				$('#monthly-table tbody').append('<tr>' + str + '</tr>');
-			}
-		}
-		/** 輸出年獲利 */
-		function outputYear() {
-			if(curYear != getYear(i-1)) { // i-1 為年底
-				lastYearNet = networth_arr[i-1];
-			}
-			if(curYear != getYear(i+1)) { // i為年底
-				var str =  '<td>'+curYear+'</td>'+
-						   '<td>'+((networth-lastYearNet)*networthRate).toFixed(0)+'</td>';
-				$('#annual-table tbody').append('<tr>' + str + '</tr>');
-			}
 		}
 		
 		/** 輸出計算結果 */

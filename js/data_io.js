@@ -144,3 +144,22 @@ function outputYear(curYear, networth, networthRate, lastYearNet) {
 		       '<td>'+((networth-lastYearNet)*networthRate).toFixed(0)+'</td>';
 	$('#annual-table tbody').append('<tr>' + str + '</tr>');
 }
+
+function outputStatistics(isEnter, isClear, i, networth, networthRate, networth_arr, MDD1,
+													dealCnt, curMonth, curYear, netStats ) {
+	outputNetworth(isEnter||isClear, i, networth, networthRate, MDD1, dealCnt);
+
+	if(curMonth != getMonth(i-1)) { // i-1 為月底
+		netStats.lastMonthNet = networth_arr[i-1];
+	}
+	if(i==data_arr.length-1 || curMonth != getMonth(i+1)) { // i為月底
+		outputMonth(curYear, curMonth, networth, networthRate, netStats.lastMonthNet);
+	}
+
+	if(curYear != getYear(i-1)) { // i-1 為年底
+		netStats.lastYearNet = networth_arr[i-1];
+	}
+	if(i==data_arr.length-1 || curYear != getYear(i+1)) { // i為年底
+		outputYear(curYear, networth, networthRate, netStats.lastYearNet);
+	}
+}

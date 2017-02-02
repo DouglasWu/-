@@ -373,7 +373,7 @@
 				
 				/** get minS3, maxS3 */
 				maxS3 = 0;
-				minS3 = 999999;
+				minS3 = Infinity;
 				for(var j = i-S3-1; j <= i-2; j++) {
 					maxS3 = Math.max(maxS3, data_arr[j]['max']);
 					minS3 = Math.min(minS3, data_arr[j]['min']);

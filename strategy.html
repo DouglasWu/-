@@ -285,14 +285,14 @@
 					goodS1 = s1;
 					goodS2 = s2;
 				}
-				var str = ''+prof.toFixed(1)+'\t';
+				var str = ''+prof.toFixed(fixPoint)+'\t';
 				$('pre').append(str);
 				if(s1==25){
 					$('pre').append('\n');
 				}
 			}
 		}
-		console.log("maxProf: "+maxProf.toFixed(1));
+		console.log("maxProf: "+maxProf.toFixed(fixPoint));
 		console.log("S1: "+goodS1);
 		console.log("S2: "+goodS2);
 	}*/
@@ -487,11 +487,11 @@
 			var str = '<td>'+dealCnt+'</td>'+
 					  '<td>'+data_arr[inIdx]['date']+'</td>'+
 					  '<td>'+data_arr[outIdx]['date']+'</td>'+
-					  '<td>'+inP.toFixed(1)+'</td>'+
-					  '<td>'+outP.toFixed(1)+'</td>'+
+					  '<td>'+inP.toFixed(fixPoint)+'</td>'+
+					  '<td>'+outP.toFixed(fixPoint)+'</td>'+
 					  '<td>'+b_or_s[0]+'</td>'+
-					  '<td>'+profit.toFixed(1)+'</td>' + 
-					  '<td>'+bias.toFixed(5)+'</td>';
+					  '<td>'+profit.toFixed(fixPoint)+'</td>' +
+					  '<td>'+bias.toFixed(fixPoint+4)+'</td>';
 			$('#detail-table tbody').append('<tr>' + str + '</tr>');
 		}
 		
@@ -503,20 +503,20 @@
 			avgProfit = totalProfit/profitTimes;
 			avgLoss = totalLoss/losTimes;
 			avgBalance = (totalProfit-totalLoss)/dealCnt;
-			$('#total').html((totalProfit-totalLoss).toFixed(1));
-			$('#total-profit').html(totalProfit.toFixed(1));
-			$('#total-loss').html(totalLoss.toFixed(1));
+			$('#total').html((totalProfit-totalLoss).toFixed(fixPoint));
+			$('#total-profit').html(totalProfit.toFixed(fixPoint));
+			$('#total-loss').html(totalLoss.toFixed(fixPoint));
 			$('#deal-times').html(dealCnt);
-			$('#year-deal-times').html(yearDealTimes.toFixed(1));
+			$('#year-deal-times').html(yearDealTimes.toFixed(fixPoint));
 			$('#profit-times').html(profitTimes);
 			$('#loss-times').html(losTimes);
-			$('#win-rate').html( (profitTimes/dealCnt).toFixed(3) );
-			$('#max-profit-value').html(maxProfitValue.toFixed(1));
-			$('#max-loss-value').html(maxLossValue.toFixed(1));
-			$('#avg-profit').html(avgProfit.toFixed(4));
-			$('#avg-loss').html(avgLoss.toFixed(4));
-			$('#avg-balance').html(avgBalance.toFixed(4));
-			$('#avg-rate').html((avgProfit/avgLoss).toFixed(5));
+			$('#win-rate').html( (profitTimes/dealCnt).toFixed(fixPoint+2) );
+			$('#max-profit-value').html(maxProfitValue.toFixed(fixPoint));
+			$('#max-loss-value').html(maxLossValue.toFixed(fixPoint));
+			$('#avg-profit').html(avgProfit.toFixed(fixPoint+3));
+			$('#avg-loss').html(avgLoss.toFixed(fixPoint+3));
+			$('#avg-balance').html(avgBalance.toFixed(fixPoint+3));
+			$('#avg-rate').html((avgProfit/avgLoss).toFixed(fixPoint+4));
 			$('#max-con-loss-times').html(maxConLosTimes);
 			$('#max-con-loss-value').html( (maxConLosValue*networthRate).toFixed(0));
 		}

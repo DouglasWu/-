@@ -1,7 +1,7 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
 <head>
-	<title>策略1-3</title> 
+	<title>策略1-3</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="css/bootstrap.min.css" media="all" rel="stylesheet">
@@ -9,10 +9,18 @@
 	<script type="text/javascript" language="javascript" src="js/jquery-2.1.1.js"></script>
 	<script type="text/javascript" language="javascript" src="js/bootstrap.min.js"></script>
 	<script type="text/javascript" language="javascript" src="js/data_array.js"></script>
+	<script type="text/javascript" language="javascript" src="js/data_array_motai.js"></script>
+	<script type="text/javascript" language="javascript" src="js/data_array_shiauheng.js"></script>
+	<script type="text/javascript" language="javascript" src="js/data_array_oil.js"></script>
 	<script type="text/javascript" language="javascript" src="js/data_prepare.js"></script>
+	<script type="text/javascript" language="javascript" src="js/data_io.js"></script>
+	<script type="text/javascript" language="javascript" src="js/table_scroll.js"></script>
+
 	<script type="text/javascript" language="javascript" src="js/back-to-top.js"></script>
 	<script type="text/javascript" language="javascript" src="js/d3.min.js"></script>
-	<script type="text/javascript" language="javascript" src="js/month-bar-chart.js"></script>
+	<script type="text/javascript" language="javascript" src="js/line-chart.js"></script>
+
+	<!--<script type="text/javascript" language="javascript" src="js/month-bar-chart.js"></script>-->
 	<style>
 		body {
 			padding-top: 20px;
@@ -37,9 +45,9 @@
 			background-color:white;
 			/*border-bottom: 2px solid #D6D6D6;*/
 		}
-		
+
 		/* d3 bar chart setting */
-		
+
 		.axis path,
 		.axis line {
 		  fill: none;
@@ -79,7 +87,33 @@
 			<li>策略1.1其實是策略1.3的一種情況，當S1=S4，而且S2=S3時，就是策略1.1</li>
 		</ul>
 		</p>
-		<p><b>資料：</b> 摩台指 2005~2015年</p>
+		<p><b>資料：</b> 摩台指</p>
+		<div class="form-inline">
+			<label for="input-file">從電腦選擇資料(<a href="data_MOTAI.txt" target="_blank">觀看範例</a>)</label><br>
+			<input type='file' accept='text/plain' onchange='openFile(event)' id="input-file">
+			<br>
+
+			<label for="input-data">從程式選擇資料</label><br>
+			<label class="radio-inline"><input type="radio" value="0" name="optradio" checked>摩台指</label>
+			<label class="radio-inline"><input type="radio" value="1" name="optradio">小恆生</label>
+			<label class="radio-inline"><input type="radio" value="2" name="optradio">輕原油</label>
+			<br><br>
+
+			<div class="well" id="first-and-last">
+				<script>
+					OutputFirstAndLast();
+				</script>
+			</div>
+
+			<label for="startYear">開始年份</label>
+			<select class="form-control" id="startYear" >
+			</select>
+
+			<label for="endYear">結束年份</label>
+			<select class="form-control" id="endYear">
+			</select>
+
+		</div><hr>
 		<div class="form-inline">
 		<label for="test-data">輸入S1, S2, S3, S4(空格隔開單筆，換行隔開多筆)</label><br>
 		<textarea class="form-control" rows="9" cols="40" id="test-data">
@@ -109,34 +143,37 @@
 </div>
 <pre></pre>
 		<hr>
-		
+
 		<div class="form-inline">
-		  
+
 			<label for="unitCost">最小跳動價格</label>
 			<input type="text" size="4" class="form-control" id="minUnit"/>
-			
-			
+
+
 			<label for="unitCost">交易成本</label>
 			<input type="text" size="4" class="form-control" id="unitCost"/>
-			
+
 			<label for="networth-rate">淨值換算</label>
 			<input type="text" size="4" class="form-control" id="networth-rate"/>
+
+			<label for="fix-point">小數點位數</label>
+			<input type="text" size="3" class="form-control" id="fix-point"/>
 		</div>
 		<div class="form-inline">
 			<label for="S1">S1</label>
 			<input type="text" size="4" class="form-control" id="S1" />
-			
+
 			<label for="S2">S2</label>
 			<input type="text" size="4" class="form-control" id="S2"/>
-			
+
 			<label for="S3">S3</label>
 			<input type="text" size="4" class="form-control" id="S3" />
-			
+
 			<label for="S4">S4</label>
 			<input type="text" size="4" class="form-control" id="S4"/>
-		  	
+
 			<button class="btn btn-default" onclick="run(true)">計算</button>
-		 
+
 		</div>
 
 		<div class="row">
@@ -160,25 +197,23 @@
 						<p>平均盈利/平均虧損：<span id="avg-rate"></span></p>
 						<p>最大連續虧損次數：<span id="max-con-loss-times"></span></p>
 						<p>最大連續虧損金額：<span id="max-con-loss-value"></span>(美元)</p>
+						<p>MDD1：<span id="MDD1"></span></p>
 					</div>
 				</div>
 			</div>
 		</div>
-		
+
 		<div role="tabpanel">
 
 		  <!-- Nav tabs -->
 		  <ul class="nav nav-tabs" role="tablist">
-			<li role="presentation" class="active"><a href="#detail" aria-controls="detail" role="tab" data-toggle="tab">交易明細</a></li>
-			<li role="presentation"><a href="#daily-networth" aria-controls="daily-networth" role="tab" data-toggle="tab">每日淨值</a></li>
-		
-		<li role="presentation"><a href="#daily-networth-chart" aria-controls="daily-networth-chart" role="tab" data-toggle="tab">每日淨值圖</a></li>
-		
-		
-			<li role="presentation"><a href="#deal-networth" aria-controls="deal-networth" role="tab" data-toggle="tab">交易日淨值</a></li>
-			<li role="presentation"><a href="#monthly" aria-controls="monthly" role="tab" data-toggle="tab">月獲利</a></li>
-			<li role="presentation"><a href="#annual" aria-controls="annual" role="tab" data-toggle="tab">年獲利</a></li>
-			
+			  <li role="presentation" class="active"><a href="#detail" aria-controls="detail" role="tab" data-toggle="tab">交易明細</a></li>
+			  <li role="presentation"><a href="#daily-networth" aria-controls="daily-networth" role="tab" data-toggle="tab">每日淨值</a></li>
+			  <li role="presentation"><a href="#daily-networth-chart" aria-controls="daily-networth-chart" role="tab" data-toggle="tab">每日淨值圖</a></li>
+			  <li role="presentation"><a href="#deal-networth" aria-controls="deal-networth" role="tab" data-toggle="tab">交易日淨值</a></li>
+			  <li role="presentation"><a href="#deal-networth-chart" aria-controls="deal-networth-chart" role="tab" data-toggle="tab">交易日淨值圖</a></li>
+			  <li role="presentation"><a href="#monthly" aria-controls="monthly" role="tab" data-toggle="tab">月獲利</a></li>
+			  <li role="presentation"><a href="#annual" aria-controls="annual" role="tab" data-toggle="tab">年獲利</a></li>
 		  </ul>
 
 		  <!--交易明細 -->
@@ -201,7 +236,7 @@
 					</div>
 				</div>
 			</div>
-			
+
 			 <!--每日淨值 -->
 			<div role="tabpanel" class="tab-pane fade in row" id="daily-networth">
 				<div class="col-md-5">
@@ -214,15 +249,15 @@
 					</div>
 				</div>
 			</div>
-			
+
 			 <!--每日淨值圖 -->
 			<div role="tabpanel" class="tab-pane fade in row" id="daily-networth-chart">
 				<div class="col-md-12">
+					<h3>每日淨值圖</h3>
 					<div class="line-chart"></div>
-					<script>//drawLineChart();</script>
 				</div>
 			</div>
-			
+
 			 <!--交易淨值 -->
 			<div role="tabpanel" class="tab-pane fade in row" id="deal-networth">
 				<div class="col-md-5">
@@ -235,7 +270,15 @@
 					</div>
 				</div>
 			</div>
-			
+
+			<!--交易值圖 -->
+			<div role="tabpanel" class="tab-pane fade in row" id="deal-networth-chart">
+				<div class="col-md-12">
+					<h3>交易日淨值圖</h3>
+					<div class="deal-line-chart"></div>
+				</div>
+			</div>
+
 			 <!--月獲利 -->
 			<div role="tabpanel" class="tab-pane fade in row" id="monthly">
 				<div class="col-md-5">
@@ -248,7 +291,7 @@
 					</div>
 				</div>
 			</div>
-			
+
 			 <!--年獲利 -->
 			<div role="tabpanel" class="tab-pane fade in row" id="annual">
 				<div class="col-md-5">
@@ -261,14 +304,14 @@
 					</div>
 				</div>
 			</div>
-			
+
 		  </div>
 		</div><!--tabpanel-->
 	</div>
-	
+
 	<a href="#0" class="cd-top">Top</a>
 
-	
+
 	<script>
 		$(document).ready(function() {
 			/** 初始參數設定 */
@@ -279,56 +322,24 @@
 			$('#S2').val(10);
 			$('#S3').val(20);
 			$('#S4').val(10);
-		/*	$('#startYear').change(function(){
-				var startYear = parseInt($('#startYear').val());
-				$('#endYear option').remove();
-				for(var i=startYear; i<=2015; i++) {
-					$('#endYear').append('<option>'+i+'</option>');
-				}
-				$('#endYear option').last().attr('selected', true);
-			});*/
-			
-			/** 凍結表格欄位  */
-			function moveScroll() {
-				var scroll = $(window).scrollTop();
-				var anchor_top = $("#detail-table").offset().top;
-				var anchor_bottom = $("#bottom_anchor").offset().top;
-				if (scroll>anchor_top && scroll<anchor_bottom) {
-					clone_table = $("#clone");
-					if(clone_table.length == 0){
-						clone_table = $("#detail-table").clone();
-						clone_table.attr('id', 'clone');
-						clone_table.css({position:'fixed',
-								 'pointer-events': 'none',
-								 top:0});
-						clone_table.width($("#detail-table").width());
-						$("#table-container").append(clone_table);
-						$("#clone").css({visibility:'hidden'});
-						$("#clone thead").css({visibility:'visible'});
-					}
-				} else {
-					$("#clone").remove();
-				}
-			}
-			$(window).scroll(moveScroll);
+			$('#fix-point').val(1);
 		});
 	</script>
-	
-	
+
 	<script>
 	function test_data() {
 		$('pre').html('S1\tS2\tS3\tS4\t總獲利\n');
 		var str = $('#test-data').val();
 		var arr = str.split(/\t| |\n/);
-		
+
 		for(var i = 0; i<arr.length; i+=4) {
 			var s1 = parseInt(arr[i]),
 				s2 = parseInt(arr[i+1]),
 				s3 = parseInt(arr[i+2]),
 				s4 = parseInt(arr[i+3]);
-			
+
 			var prof = run(false, s1, s2, s3, s4);
-			var outputStr = s1+'\t'+s2+'\t'+s3+'\t'+s4+'\t'+prof.toFixed(1)+'\n';
+			var outputStr = s1+'\t'+s2+'\t'+s3+'\t'+s4+'\t'+prof.toFixed(fixPoint)+'\n';
 			$('pre').append(outputStr);
 		}
 	}
@@ -336,13 +347,13 @@
 		$('pre').html('');
 		 $('#test-data').val('');
 	}
-	
+
 	function run(toOutput, _S1, _S2, _S3, _S4) {
 		//console.log(toOutput);
 		$('tbody').html('');
 		$('.bar-chart').html('');
-		
-		
+
+
 		/** 取得輸入的參數 */
 		var S1, S2, S3, S4;
 		if(toOutput) {
@@ -359,8 +370,11 @@
 		}
 		var networthRate = parseFloat($('#networth-rate').val()), // 100 淨值換算
 			unitCost = parseFloat($('#unitCost').val()),          // 0.2 交易手續費
-			minUnit = parseFloat($('#minUnit').val());            // 0.1 最小跳動價格
-		
+			minUnit = parseFloat($('#minUnit').val()),            // 0.1 最小跳動價格
+			fixPoint = parseInt($('#fix-point').val()),  // 小數點位數
+			startYear = parseInt($('#startYear').val()),
+			endYear = parseInt($('#endYear').val());
+
 		/** 輸出資料 */
 		var totalProfit = 0,
 			totalLoss = 0,
@@ -375,7 +389,7 @@
 			avgBalance = 0,
 			maxConLosTimes = 0,
 			maxConLosValue = 0;
-			
+
 		var b_or_s = ''; // "BUY" or "SEL"
 		var enterPoint = -1; // -1 means no need to enter
 		var monthlyProfit = {};
@@ -395,18 +409,18 @@
 		var networth = 0, maxNetworth = 0, MDD1 = 0;
 		var networth_arr = [];
 		var netStats = {lastMonthNet:0, lastYearNet:0};
-		
+
 
 		for(var i=0; i<data_arr.length; i++) {
 			curYear = getYear(i);
 			curMonth = getMonth(i);
 			networth_arr[i] = 0;
-			
-			if(2005<=curYear && curYear<=2015) {
+
+			if(startYear<=curYear && curYear<=endYear) {
 				/** brute force to get maxS1, minS2, minS3 and maxS4  */
 				maxS1 = maxS4 = 0;
 				minS2 = minS3 = 99999;
-				
+
 				for(var j = i-S1; j <= i-1; j++) {
 					maxS1 = Math.max(maxS1, data_arr[j]['max']);
 				}
@@ -419,29 +433,25 @@
 				for(var j = i-S4; j <= i-1; j++) {
 					maxS4 = Math.max(maxS4, data_arr[j]['max']);
 				}
-				
+
 
 				/** 進場判斷 */
-				var changed = false; // 有進場或退場發生
-				var onlyEnter = false; // 只進場
 				var isClear = false; // 有平倉
 				var isEnter = false; // 有反手
-				
+
 				var dayStart = data_arr[i]['start'];
 				var dayMin = data_arr[i]['min'];
 				var dayMax = data_arr[i]['max'];
-				
+
 				if(!entered) { // 未持單
 					if(dayMax > maxS1) { // 進場做多
 						var enterP = dayStart > maxS1? dayStart : maxS1+minUnit;
 						enterMarket(i, enterP, "BUY");
-						changed = true;
 						isEnter = true;
 					}
 					else if(dayMin < minS3) { // 進場做空
 						var enterP = dayStart < minS3? dayStart : minS3-minUnit;
 						enterMarket(i, enterP, "SEL");
-						changed = true;
 						isEnter = true;
 					}
 				}
@@ -449,15 +459,13 @@
 					if(b_or_s=="BUY") { // 持多單
 						if(dayStart < minS3) { // 開盤價跌破前S3日最低點
 							// 平倉後反手做空
-							clearMarket(i, dayStart); 
+							clearMarket(i, dayStart);
 							enterMarket(i, dayStart, "SEL");
-							changed = true;
 							isClear = isEnter = true;
 						}
 						else if(dayMin < minS2) { // 跌破前S2日最低點
 							var out = dayStart < minS2? dayStart : minS2-minUnit;
 							clearMarket(i, out);
-							changed = true;
 							isClear = true;
 							if(dayMin < minS3) {
 								enterMarket(i, minS3-minUnit,"SEL") // 反手做空
@@ -470,13 +478,11 @@
 							// 平倉後反手做多
 							clearMarket(i, dayStart);
 							enterMarket(i, dayStart, "BUY");
-							changed = true;
 							isClear = isEnter = true;
 						}
 						else if(dayMax > maxS4) { // 突破前S4日最高點
 							var out = dayStart > maxS4 ? dayStart : maxS4+minUnit;
 							clearMarket(i, out);
-							changed = true;
 							isClear = true;
 							if(dayMax > maxS1) { // 反手做多
 								enterMarket(i, maxS1+minUnit, "BUY");
@@ -487,45 +493,20 @@
 				}
 
 				/** 淨值計算 */
-				if(!changed) { // 沒交易
-					if(entered) {
-						networth += b_or_s=="BUY" ? (data_arr[i]['end']-data_arr[i-1]['end']) : (data_arr[i-1]['end']-data_arr[i]['end']);
-					}
-				}
-				else { // 有交易
-					var enterProfit=0, dealProfit=0;
-					
-					if(isEnter)
-						enterProfit = b_or_s=="BUY" ? (data_arr[i]['end']-inP):(inP-data_arr[i]['end']);
-					
-					if(isClear) {
-						if(isEnter) // 反手進場 b_or_s會被更改
-							dealProfit = b_or_s=="BUY" ? (data_arr[i-1]['end']-outP-unitCost):(outP-data_arr[i-1]['end']-unitCost);
-						else
-							dealProfit = b_or_s=="SEL" ? (data_arr[i-1]['end']-outP-unitCost):(outP-data_arr[i-1]['end']-unitCost);
-					}
-						
-					networth += enterProfit+dealProfit;
-				}
-				networth_arr[i] = networth;
-				var DD1 = (maxNetworth-networth)*networthRate;
-				MDD1 = Math.max(MDD1, DD1);
-				
+                countNetworth(isClear, isEnter)
+
 				if(toOutput) {
 					outputStatistics(isEnter, isClear, i, networth, networthRate, networth_arr, MDD1,
 							dealCnt, curMonth, curYear, netStats );
 				}
 			}
 		}
-		if(toOutput)
+		if(toOutput) {
 			outputResult();
+			drawLineChart (networthData);
+			drawDealLineChart (dealNetworthData);
+		}
 
-		function getMonth(idx) {
-			return  parseInt(data_arr[idx]['date'].split('/')[1]);
-		}
-		function getYear(idx) {
-			return  parseInt(data_arr[idx]['date'].split('/')[0]);
-		}
 		function enterMarket(idx, inValue, type) { // 進場
 			entered = true;
 			inIdx = idx;
@@ -557,61 +538,90 @@
 				maxConLosTimes = Math.max(tmpLosTimes, maxConLosTimes);
 				maxConLosValue = Math.max(tmpLosValue, maxConLosValue);
 			}
-			
+
 			/** brute force to get MA60 (進場前60天)*/
 			var sum = 0
 			for(var j = inIdx-60; j <= inIdx-1; j++) {
 				sum += data_arr[j]['end'];
 			}
 			MA60 = sum/60;
-			
+
 			if(toOutput)
 				outputDetail();
 		}
-		
+
+        /** 淨值計算 */
+        function countNetworth(isClear, isEnter) {
+            if(!(isEnter || isClear)) { // 沒交易
+                if(entered) {
+                    networth += b_or_s=="BUY" ? (data_arr[i]['end']-data_arr[i-1]['end']) : (data_arr[i-1]['end']-data_arr[i]['end']);
+                }
+            }
+            else { // 有交易
+                var enterProfit=0, dealProfit=0;
+
+                if(isEnter)
+                    enterProfit = b_or_s=="BUY" ? (data_arr[i]['end']-inP):(inP-data_arr[i]['end']);
+
+                if(isClear) {
+                    if(isEnter) // 反手進場 b_or_s會被更改
+                        dealProfit = b_or_s=="BUY" ? (data_arr[i-1]['end']-outP-unitCost):(outP-data_arr[i-1]['end']-unitCost);
+                    else
+                        dealProfit = b_or_s=="SEL" ? (data_arr[i-1]['end']-outP-unitCost):(outP-data_arr[i-1]['end']-unitCost);
+                }
+
+                networth += enterProfit+dealProfit;
+            }
+            networth_arr[i] = networth;
+            var DD1 = (maxNetworth-networth)*networthRate;
+            MDD1 = Math.max(MDD1, DD1);
+            maxNetworth = Math.max(maxNetworth, networth);
+        }
+
 		/** 輸出交易明細 */
 		function outputDetail() {
 			var bias = b_or_s=="BUY"? (inMaxS1-MA60)/MA60 : (inMinS3-MA60)/MA60; // 乖離率計算
-			
+
 			var str = '<td>'+dealCnt+'</td>'+
-					  '<td>'+data_arr[inIdx]['date']+'</td>'+
-					  '<td>'+data_arr[outIdx]['date']+'</td>'+
-					  '<td>'+inP.toFixed(1)+'</td>'+
-					  '<td>'+outP.toFixed(1)+'</td>'+
+					  '<td>'+dateFormat(data_arr[inIdx]['date'])+'</td>'+
+					  '<td>'+dateFormat(data_arr[outIdx]['date'])+'</td>'+
+					  '<td>'+inP.toFixed(fixPoint)+'</td>'+
+					  '<td>'+outP.toFixed(fixPoint)+'</td>'+
 					  '<td>'+b_or_s[0]+'</td>'+
-					  '<td>'+profit.toFixed(1)+'</td>' + 
-					  '<td>'+bias.toFixed(5)+'</td>';
+					  '<td>'+profit.toFixed(fixPoint)+'</td>' +
+					  '<td>'+bias.toFixed(fixPoint+4)+'</td>';
 			$('#detail-table tbody').append('<tr>' + str + '</tr>');
 		}
-		
+
 		/** 輸出計算結果 */
 		function outputResult() {
 			yearDealTimes = dealCnt/(2015-2005+1);
 			avgProfit = totalProfit/profitTimes;
 			avgLoss = totalLoss/losTimes;
 			avgBalance = (totalProfit-totalLoss)/dealCnt;
-			$('#total').html((totalProfit-totalLoss).toFixed(1));
-			$('#total-profit').html(totalProfit.toFixed(1));
-			$('#total-loss').html(totalLoss.toFixed(1));
+			$('#total').html((totalProfit-totalLoss).toFixed(fixPoint));
+			$('#total-profit').html(totalProfit.toFixed(fixPoint));
+			$('#total-loss').html(totalLoss.toFixed(fixPoint));
 			$('#deal-times').html(dealCnt);
-			$('#year-deal-times').html(yearDealTimes.toFixed(1));
+			$('#year-deal-times').html(yearDealTimes.toFixed(fixPoint));
 			$('#profit-times').html(profitTimes);
 			$('#loss-times').html(losTimes);
-			$('#win-rate').html( (profitTimes/dealCnt).toFixed(3) );
-			$('#max-profit-value').html(maxProfitValue.toFixed(1));
-			$('#max-loss-value').html(maxLossValue.toFixed(1));
-			$('#avg-profit').html(avgProfit.toFixed(4));
-			$('#avg-loss').html(avgLoss.toFixed(4));
-			$('#avg-balance').html(avgBalance.toFixed(4));
-			$('#avg-rate').html((avgProfit/avgLoss).toFixed(5));
+			$('#win-rate').html( (profitTimes/dealCnt).toFixed(fixPoint+2) );
+			$('#max-profit-value').html(maxProfitValue.toFixed(fixPoint));
+			$('#max-loss-value').html(maxLossValue.toFixed(fixPoint));
+			$('#avg-profit').html(avgProfit.toFixed(fixPoint+3));
+			$('#avg-loss').html(avgLoss.toFixed(fixPoint+3));
+			$('#avg-balance').html(avgBalance.toFixed(fixPoint+3));
+			$('#avg-rate').html((avgProfit/avgLoss).toFixed(fixPoint+4));
 			$('#max-con-loss-times').html(maxConLosTimes);
 			$('#max-con-loss-value').html( (maxConLosValue*networthRate).toFixed(0));
+			$('#MDD1').html( MDD1.toFixed(0) );
 		}
-		
+
 		return totalProfit-totalLoss;
-		
+
 	}
-		
+
 	</script>
 
 </body>

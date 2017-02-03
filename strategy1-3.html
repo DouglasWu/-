@@ -142,6 +142,7 @@
 
 </div>
 <pre></pre>
+<div class="test-result"></div>
 		<hr>
 
 		<div class="form-inline">
@@ -331,6 +332,8 @@
 		$('pre').html('S1\tS2\tS3\tS4\t總獲利\n');
 		var str = $('#test-data').val();
 		var arr = str.split(/\t| |\n/);
+		var fixPoint = parseInt($('#fix-point').val());
+		var maxProf = -Infinity, maxS1, maxS2, maxS3, maxS4;
 
 		for(var i = 0; i<arr.length; i+=4) {
 			var s1 = parseInt(arr[i]),
@@ -339,13 +342,23 @@
 				s4 = parseInt(arr[i+3]);
 
 			var prof = run(false, s1, s2, s3, s4);
+			
+			if (prof > maxProf) {
+				maxProf = prof;
+				maxS1 = s1;
+				maxS2 = s2;
+				maxS3 = s3;
+				maxS4 = s4;
+			}
 			var outputStr = s1+'\t'+s2+'\t'+s3+'\t'+s4+'\t'+prof.toFixed(fixPoint)+'\n';
 			$('pre').append(outputStr);
+			$('.test-result').text('最大獲利：'+maxProf.toFixed(fixPoint)+', S1='+maxS1+', S2='+maxS2+', S3='+maxS3+', S4='+maxS4);
 		}
 	}
 	function clear_test() {
 		$('pre').html('');
-		 $('#test-data').val('');
+		$('.test-result').text('');
+		$('#test-data').val('');
 	}
 
 	function run(toOutput, _S1, _S2, _S3, _S4) {

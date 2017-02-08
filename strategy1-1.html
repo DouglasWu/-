@@ -494,7 +494,7 @@
 
 		/** 輸出計算結果 */
 		function outputResult() {
-			yearDealTimes = dealCnt/(2015-2005+1);
+			yearDealTimes = dealCnt/(endYear-startYear+1);
 			avgProfit = totalProfit/profitTimes;
 			avgLoss = totalLoss/losTimes;
 			avgBalance = (totalProfit-totalLoss)/dealCnt;

@@ -567,6 +567,7 @@
         function countNetworth(isClear, isEnter) {
             if(!(isEnter || isClear)) { // 沒交易
                 if(entered) {
+                	//console.log(i, data_arr[i]);
                     networth += b_or_s=="BUY" ? (data_arr[i]['end']-data_arr[i-1]['end']) : (data_arr[i-1]['end']-data_arr[i]['end']);
                 }
             }
@@ -612,7 +613,7 @@
 			avgProfit = totalProfit/profitTimes;
 			avgLoss = totalLoss/losTimes;
 			avgBalance = (totalProfit-totalLoss)/dealCnt;
-			$('#total').html((totalProfit-totalLoss).toFixed(fixPoint));
+			$('#total').html((networth).toFixed(fixPoint));
 			$('#total-profit').html(totalProfit.toFixed(fixPoint));
 			$('#total-loss').html(totalLoss.toFixed(fixPoint));
 			$('#deal-times').html(dealCnt);
@@ -631,7 +632,7 @@
 			$('#MDD1').html( MDD1.toFixed(0) );
 		}
 
-		return totalProfit-totalLoss;
+		return networth;
 
 	}
 

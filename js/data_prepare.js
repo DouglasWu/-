@@ -38,6 +38,7 @@ function ParseData(text) {
     //ExtractData();
     //PrintData(data);
     data_arr = data.slice();
+
     //setYear();
     OutputFirstAndLast();
     $('#output').html(JSON.stringify(data));

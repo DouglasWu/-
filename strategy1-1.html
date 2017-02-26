@@ -498,7 +498,7 @@
 			avgProfit = totalProfit/profitTimes;
 			avgLoss = totalLoss/losTimes;
 			avgBalance = (totalProfit-totalLoss)/dealCnt;
-			$('#total').html((totalProfit-totalLoss).toFixed(fixPoint));
+			$('#total').html((networth).toFixed(fixPoint));
 			$('#total-profit').html(totalProfit.toFixed(fixPoint));
 			$('#total-loss').html(totalLoss.toFixed(fixPoint));
 			$('#deal-times').html(dealCnt);
@@ -516,7 +516,7 @@
 			$('#max-con-loss-value').html( (maxConLosValue*networthRate).toFixed(0));
 		}
 		
-		return totalProfit-totalLoss;
+		return networth;
 		
 	}
 		

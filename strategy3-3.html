@@ -139,6 +139,8 @@
 			<li role="presentation"><a href="#deal-networth" aria-controls="deal-networth" role="tab" data-toggle="tab">交易日淨值</a></li>
 			<li role="presentation"><a href="#deal-networth-chart" aria-controls="deal-networth-chart" role="tab" data-toggle="tab">交易日淨值圖</a></li>
 			<li role="presentation"><a href="#monthly" aria-controls="monthly" role="tab" data-toggle="tab">月獲利</a></li>
+			<li role="presentation"><a href="#weekly" aria-controls="weekly" role="tab" data-toggle="tab">每週淨值</a></li>
+	        <li role="presentation"><a href="#weekly-chart" aria-controls="weekly-chart" role="tab" data-toggle="tab">每週淨值圖</a></li>
 			<li role="presentation"><a href="#annual" aria-controls="annual" role="tab" data-toggle="tab">年獲利</a></li>
 			
 		  </ul>
@@ -208,6 +210,27 @@
 					<div class="deal-line-chart"></div>
 				</div>
 			</div>
+
+			<!-- 週末淨值 -->
+			<div role="tabpanel" class="tab-pane fade in row" id="weekly">
+				<div class="col-md-5">
+					<div id="table-container">
+						<table class="table table-striped"  id="weekly-table">
+							<thead><tr><th>週</th><th>淨值</th></tr></thead>
+							<tbody></tbody>
+						</table>
+						<div id="bottom_anchor"></div>
+					</div>
+				</div>
+			</div>
+
+			 <!--週末淨值圖 -->
+            <div role="tabpanel" class="tab-pane fade in row" id="weekly-chart">
+                <div class="col-md-12">
+                    <h3>每週淨值圖</h3>
+                    <div class="week-line-chart"></div>
+                </div>
+            </div>
 			
 			 <!--月獲利 -->
 			<div role="tabpanel" class="tab-pane fade in row" id="monthly">
@@ -417,10 +440,11 @@
 			}
 		}
 		if(toOutput) {
-			outputResult();
-			drawLineChart (networthData);
-			drawDealLineChart (dealNetworthData);
-		}
+            outputResult();
+            drawLineChart (networthData, "day");
+            drawLineChart (dealNetworthData, "deal");
+            drawLineChart(weekNetworthData, "week");
+        }
 
 		function isLongK(start, end) {
 			//console.log('start:'+start+', end:'+end+', S1:'+S1);
@@ -508,10 +532,10 @@
 		/** 輸出交易明細 */
 		function outputDetail() {
 			var str = '<td>'+dealCnt+'</td>'+
-					  '<td>'+inLongKDate+'</td>'+
+					  '<td>'+dateFormat(inLongKDate)+'</td>'+
 					  '<td>'+inLongKMax.toFixed(fixPoint)+'</td>'+
 					  '<td>'+inLongKMin.toFixed(fixPoint)+'</td>'+
-					  '<td>'+outLongKDate+'</td>'+
+					  '<td>'+dateFormat(outLongKDate)+'</td>'+
 					  '<td>'+outLongKMax.toFixed(fixPoint)+'</td>'+
 					  '<td>'+outLongKMin.toFixed(fixPoint)+'</td>'+
 					  '<td>'+dateFormat(data_arr[inIdx]['date'])+'</td>'+

@@ -169,6 +169,8 @@
 		    <li role="presentation"><a href="#daily-networth-chart" aria-controls="daily-networth-chart" role="tab" data-toggle="tab">每日淨值圖</a></li>
 			<li role="presentation"><a href="#deal-networth" aria-controls="deal-networth" role="tab" data-toggle="tab">交易日淨值</a></li>
             <li role="presentation"><a href="#deal-networth-chart" aria-controls="deal-networth-chart" role="tab" data-toggle="tab">交易日淨值圖</a></li>
+            <li role="presentation"><a href="#weekly" aria-controls="weekly" role="tab" data-toggle="tab">每週淨值</a></li>
+            <li role="presentation"><a href="#weekly-chart" aria-controls="weekly-chart" role="tab" data-toggle="tab">每週淨值圖</a></li>
 			<li role="presentation"><a href="#monthly" aria-controls="monthly" role="tab" data-toggle="tab">月獲利</a></li>
 			<li role="presentation"><a href="#annual" aria-controls="annual" role="tab" data-toggle="tab">年獲利</a></li>
 		  </ul>
@@ -194,7 +196,7 @@
 				</div>
 			</div>
 			
-			 <!--每日淨值 -->
+			<!--每日淨值 -->
 			<div role="tabpanel" class="tab-pane fade in row" id="daily-networth">
 				<div class="col-md-5">
 					<div id="table-container">
@@ -207,7 +209,7 @@
 				</div>
 			</div>
 			
-			 <!--每日淨值圖 -->
+			<!--每日淨值圖 -->
 			<div role="tabpanel" class="tab-pane fade in row" id="daily-networth-chart">
 				<div class="col-md-12">
 					<div class="line-chart"></div>
@@ -227,15 +229,36 @@
 				</div>
 			</div>
 
-            <!--交易值圖 -->
-              <div role="tabpanel" class="tab-pane fade in row" id="deal-networth-chart">
-                  <div class="col-md-12">
-                      <h3>交易日淨值圖</h3>
-                      <div class="deal-line-chart"></div>
-                  </div>
-              </div>
+            <!--交易淨值圖 -->
+            <div role="tabpanel" class="tab-pane fade in row" id="deal-networth-chart">
+                <div class="col-md-12">
+                    <h3>交易日淨值圖</h3>
+                    <div class="deal-line-chart"></div>
+                </div>
+            </div>
 			
-			 <!--月獲利 -->
+			<!-- 週末淨值 -->
+			<div role="tabpanel" class="tab-pane fade in row" id="weekly">
+				<div class="col-md-5">
+					<div id="table-container">
+						<table class="table table-striped"  id="weekly-table">
+							<thead><tr><th>週</th><th>淨值</th></tr></thead>
+							<tbody></tbody>
+						</table>
+						<div id="bottom_anchor"></div>
+					</div>
+				</div>
+			</div>
+
+			 <!--週末淨值圖 -->
+            <div role="tabpanel" class="tab-pane fade in row" id="weekly-chart">
+                <div class="col-md-12">
+                    <h3>每週淨值圖</h3>
+                    <div class="week-line-chart"></div>
+                </div>
+            </div>
+			
+			<!--月獲利 -->
 			<div role="tabpanel" class="tab-pane fade in row" id="monthly">
 				<div class="col-md-5">
 					<div id="table-container">
@@ -305,9 +328,8 @@
 		console.log("S2: "+goodS2);
 	}*/
 	function run(toOutput) {
-		$('tbody').html('');
-		$('.bar-chart').html('');
-
+		run_init();
+		
 		/** 取得輸入的參數 */
 		var S1 = parseInt($('#S1').val()),//5 突破前S1日最高點
 			S2 = parseInt($('#S2').val()),//5 跌破前S2日最低點
@@ -406,8 +428,9 @@
 		}
         if(toOutput) {
             outputResult();
-            drawLineChart (networthData);
-            drawDealLineChart (dealNetworthData);
+            drawLineChart (networthData, "day");
+            drawLineChart (dealNetworthData, "deal");
+            drawLineChart(weekNetworthData, "week");
         }
 
 		function enterMarket(idx, inValue, type) { // 進場

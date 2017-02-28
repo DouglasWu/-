@@ -75,8 +75,10 @@ function run_init() {
 	$('tbody').html('');
 	$('.line-chart').html('');
 	$('.deal-line-chart').html('');
+	$('.week-line-chart').html('');
 	networthData = [];
 	dealNetworthData = [];
+	weekNetworthData = [];
 }
 		
 function getMonth(idx) {
@@ -109,6 +111,7 @@ function dateDiff(date1, date2) {
 
 var networthData = []; // for line chart
 var dealNetworthData = [];
+var weekNetworthData = [];
 /**輸出淨值 */
 function outputNetworth(hasChanged, i, networth, networthRate, MDD1, dealCnt) {
 	
@@ -145,6 +148,16 @@ function outputYear(curYear, networth, networthRate, lastYearNet) {
 	$('#annual-table tbody').append('<tr>' + str + '</tr>');
 }
 
+/** 輸出每週最後一天的淨值 */
+function outputWeek(date, networth, networthRate) {
+	var money = parseFloat( (networth*networthRate).toFixed(0) );
+	var str =  '<td>'+dateFormat(date)+'</td>'+
+		       '<td>'+money+'</td>';
+	$('#weekly-table tbody').append('<tr>' + str + '</tr>');
+
+	weekNetworthData.push({"date": dateFormat(date), "networth": money});
+}
+
 function outputStatistics(isEnter, isClear, i, networth, networthRate, networth_arr, MDD1,
 													dealCnt, curMonth, curYear, netStats ) {
 	outputNetworth(isEnter||isClear, i, networth, networthRate, MDD1, dealCnt);
@@ -162,4 +175,11 @@ function outputStatistics(isEnter, isClear, i, networth, networthRate, networth_
 	if(i==data_arr.length-1 || curYear != getYear(i+1)) { // i為年底
 		outputYear(curYear, networth, networthRate, netStats.lastYearNet);
 	}
+
+	// weekly networth
+	if(i==data_arr.length-1 || getDay(i+1) < getDay(i) || dateDiff(data_arr[i]['date'], data_arr[i+1]['date']) >= 7) { 
+		// the end of the week
+		outputWeek(data_arr[i]['date'], networth, networthRate);
+	}
+
 }
